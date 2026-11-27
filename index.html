@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>酷家乐 · 大家居营销助手</title>
+  <style>
+    :root {
+      --brand: #1A56DB;
+      --brand-dark: #1444B5;
+      --brand-light: #EBF2FF;
+      --bg-page: #EEF2F7;
+      --bg-app: #F5F7FA;
+      --card: #FFFFFF;
+      --text-1: #1D2129;
+      --text-2: #4E5969;
+      --text-3: #86909C;
+      --border: #E5E6EB;
+      --green: #07C160;
+      --green-bg: #E8FFEA;
+      --orange: #FF7D00;
+      --orange-bg: #FFF7E8;
+      --red: #F53F3F;
+      --red-bg: #FFECE8;
+      --radius: 12px;
+      --font: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body { font-family: var(--font); background: var(--bg-page); color: var(--text-1); font-size: 13.5px; line-height: 1.45; min-height: 100vh; }
+    button, input, select, textarea { font-family: inherit; outline: none; }
+    button { cursor: pointer; border: none; background: none; transition: all .15s; }
+    button:active { transform: scale(.98); }
+
+    /* Top Demo Bar */
+    .demo-bar {
+      position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,.96); backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border); padding: 8px 16px; display: flex; flex-wrap: wrap;
+      align-items: center; justify-content: space-between; gap: 8px 12px; box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    }
+    .demo-brand { display: flex; align-items: center; gap: 8px; }
+    .demo-logo { width: 26px; height: 26px; border-radius: 7px; background: var(--brand); color: #fff; font-weight: 800; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+    .demo-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    .seg { display: inline-flex; background: var(--bg-app); border: 1px solid var(--border); border-radius: 8px; padding: 2px; gap: 2px; }
+    .seg-btn { padding: 4px 9px; border-radius: 6px; font-size: 12px; color: var(--text-2); white-space: nowrap; }
+    .seg-btn.active { background: #fff; color: var(--brand); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+    .ind-seg { background: var(--brand-light); border-color: #C3D9FF; }
+    .ind-seg .seg-btn.active { background: var(--brand); color: #fff; }
+    .anom-btn { padding: 4px 8px; border-radius: 6px; font-size: 11.5px; background: #fff; border: 1px solid var(--border); color: var(--text-2); }
+    .anom-btn.active { background: var(--orange-bg); border-color: var(--orange); color: var(--orange); font-weight: 600; }
+    .shot-btn { background: var(--brand-light); border: 1px solid #C3D9FF; color: var(--brand); font-weight: 600; padding: 4px 10px; border-radius: 6px; font-size: 11.5px; }
+
+    /* Stage & Phone Frame */
+    .stage { display: flex; justify-content: center; padding: 20px 12px 36px; }
+    .phone {
+      width: 390px; max-width: 100%; height: 780px; background: var(--bg-app); border-radius: 42px;
+      border: 9px solid #1D2129; box-shadow: 0 24px 56px rgba(15,28,56,.18);
+      position: relative; overflow: hidden; display: flex; flex-direction: column;
+    }
+
+    /* WeChat Chrome */
+    .wx-top { background: #fff; border-bottom: 1px solid #F2F3F5; flex-shrink: 0; z-index: 10; }
+    .wx-status { height: 28px; padding: 6px 20px 0; display: flex; justify-content: space-between; align-items: center; font-size: 11.5px; font-weight: 600; }
+    .wx-nav { height: 42px; padding: 0 12px; display: flex; align-items: center; justify-content: space-between; position: relative; }
+    .wx-title { position: absolute; left: 50%; transform: translateX(-50%); font-size: 15px; font-weight: 600; max-width: 190px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .wx-capsule { width: 76px; height: 26px; border-radius: 13px; border: 1px solid rgba(0,0,0,.14); display: flex; align-items: center; justify-content: space-evenly; font-size: 12px; color: #1D2129; }
+    .wx-cap-div { width: 1px; height: 13px; background: rgba(0,0,0,.15); }
+    .viewport { flex: 1; overflow-y: auto; overflow-x: hidden; position: relative; }
+    .viewport::-webkit-scrollbar { width: 3px; }
+    .viewport::-webkit-scrollbar-thumb { background: rgba(0,0,0,.15); border-radius: 3px; }
+
+    /* Bottom Tabbar */
+    .tabbar { height: 56px; background: #fff; border-top: 1px solid var(--border); display: flex; flex-shrink: 0; padding-bottom: 4px; }
+    .tabbar.hidden { display: none; }
+    .tab-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 10.5px; color: var(--text-3); position: relative; }
+    .tab-btn.active { color: var(--brand); font-weight: 600; }
+    .tab-badge { position: absolute; top: 3px; right: calc(50% - 20px); background: var(--red); color: #fff; font-size: 9.5px; font-weight: 700; min-width: 15px; height: 15px; border-radius: 8px; display: flex; align-items: center; justify-content: center; padding: 0 4px; }
+
+    /* Common UI */
+    .pad { padding: 12px; }
+    .stack { display: flex; flex-direction: column; gap: 10px; }
+    .row { display: flex; align-items: center; gap: 8px; }
+    .between { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .card { background: #fff; border-radius: var(--radius); padding: 12px; border: 1px solid #F0F1F5; box-shadow: 0 2px 6px rgba(0,0,0,.03); }
+    .badge { display: inline-flex; align-items: center; padding: 2px 6px; border-radius: 4px; font-size: 10.5px; font-weight: 600; white-space: nowrap; }
+    .b-blue { background: var(--brand-light); color: var(--brand); }
+    .b-orange { background: var(--orange-bg); color: var(--orange); }
+    .b-green { background: var(--green-bg); color: #009A29; }
+    .b-red { background: var(--red-bg); color: var(--red); }
+    .b-gray { background: var(--bg-app); color: var(--text-2); border: 1px solid var(--border); }
+
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 8px 12px; border-radius: 8px; font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+    .btn-sm { padding: 5px 9px; font-size: 11.5px; border-radius: 6px; }
+    .btn-block { width: 100%; }
+    .btn-primary { background: var(--brand); color: #fff; }
+    .btn-primary:hover { background: var(--brand-dark); }
+    .btn-wechat { background: var(--green); color: #fff; }
+    .btn-outline { background: #fff; color: var(--brand); border: 1px solid #BDD2FF; }
+    .btn-ghost { background: var(--bg-app); color: var(--text-2); border: 1px solid var(--border); }
+    .btn-danger { background: var(--red); color: #fff; }
+    .btn-danger-out { background: #fff; color: var(--red); border: 1px solid #FCDCDA; }
+    .btn[disabled] { opacity: .45; pointer-events: none; }
+
+    .chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+    .chips::-webkit-scrollbar { display: none; }
+    .chips.wrap { flex-wrap: wrap; overflow: visible; }
+    .chip { padding: 4px 10px; border-radius: 99px; font-size: 11.5px; background: #fff; border: 1px solid var(--border); color: var(--text-2); white-space: nowrap; }
+    .chip.active { background: var(--brand-light); border-color: var(--brand); color: var(--brand); font-weight: 600; }
+    .chip.q { background: var(--bg-app); }
+    .chip.q.active { background: var(--brand-light); border-color: var(--brand); color: var(--brand); font-weight: 600; }
+
+    /* Plan Card */
+    .plan-card { background: #fff; border-radius: var(--radius); overflow: hidden; border: 1px solid #ECEEF2; box-shadow: 0 2px 8px rgba(0,0,0,.04); cursor: pointer; }
+    .plan-body { padding: 10px 12px 11px; }
+    .plan-title { font-weight: 700; font-size: 14px; line-height: 1.35; margin-bottom: 7px; }
+    .plan-meta { font-size: 10.5px; color: var(--text-3); flex: 1; min-width: 0; }
+    .plan-img { position: relative; height: 146px; background: #E9EEF5; overflow: hidden; }
+    .plan-img svg { width: 100%; height: 100%; display: block; }
+    .img-tags { position: absolute; top: 8px; left: 8px; display: flex; gap: 5px; }
+    .t-3d { background: rgba(26,86,219,.9); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 5px; }
+    .t-hot { background: linear-gradient(90deg,#FF7D00,#F53F3F); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 5px; }
+    .t-local { background: rgba(29,33,41,.75); color: #fff; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 5px; }
+    .t-pin { background: rgba(7,193,96,.92); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 5px; }
+    .grp-hd { display: flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 700; color: var(--text-2); }
+    .grp-hd::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .trace-box { font-size: 11.5px; color: #0F5132; background: #EAF7EF; border: 1px solid #C6E9D4; padding: 6px 8px; border-radius: 6px; line-height: 1.55; }
+    .conv-row { display: flex; gap: 8px; margin-top: 9px; }
+    .conv-row > div { flex: 1; background: var(--bg-app); border-radius: 8px; padding: 7px 4px; text-align: center; }
+    .conv-row b { display: block; font-size: 16px; color: var(--text-1); line-height: 1.3; }
+    .conv-row span { font-size: 10.5px; color: var(--text-3); }
+
+    /* P2 Hero & Pano */
+    .hero { position: relative; height: 224px; background: #1E2532; overflow: hidden; user-select: none; }
+    .hero svg { width: 100%; height: 100%; display: block; }
+    .enter-3d { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); background: rgba(26,86,219,.92); border: 1.5px solid rgba(255,255,255,.75); color: #fff; padding: 9px 16px; border-radius: 99px; font-size: 12.5px; font-weight: 700; box-shadow: 0 6px 20px rgba(0,0,0,.35); }
+    .pano-stage { width: 100%; height: 100%; position: relative; cursor: grab; touch-action: pan-y; }
+    .pano-track { position: absolute; top: 0; left: 0; width: 780px; height: 224px; }
+    .pano-hud { position: absolute; bottom: 8px; left: 10px; right: 10px; display: flex; justify-content: space-between; align-items: center; }
+    .sticky-cta { position: sticky; bottom: 0; background: #fff; border-top: 1px solid var(--border); padding: 10px 12px 12px; z-index: 8; }
+
+    /* Inputs & Modals */
+    .input, .select, .textarea { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-size: 12.5px; background: #fff; }
+    .input:focus, .select:focus, .textarea:focus { border-color: var(--brand); }
+    .textarea { resize: none; min-height: 70px; }
+    .field-label { font-size: 12.5px; font-weight: 600; margin-bottom: 6px; }
+
+    .overlay { position: absolute; inset: 0; background: rgba(15,23,42,.52); z-index: 40; display: none; flex-direction: column; justify-content: flex-end; }
+    .overlay.open { display: flex; }
+    .overlay.center { justify-content: center; align-items: center; padding: 16px; }
+    .sheet { background: #fff; border-radius: 18px 18px 0 0; max-height: 85%; display: flex; flex-direction: column; overflow: hidden; }
+    .modal-box { background: #fff; border-radius: 14px; width: 100%; max-height: 82%; display: flex; flex-direction: column; overflow: hidden; }
+    .sheet-hd { padding: 12px 14px; border-bottom: 1px solid #F0F1F5; display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 14px; }
+    .sheet-bd { padding: 12px 14px 16px; overflow-y: auto; }
+    .toast { position: absolute; top: 82px; left: 50%; transform: translateX(-50%); z-index: 60; background: rgba(29,33,41,.92); color: #fff; padding: 8px 14px; border-radius: 8px; font-size: 12px; max-width: 320px; text-align: center; opacity: 0; pointer-events: none; transition: opacity .2s; }
+    .toast.show { opacity: 1; }
+    .toast.err { background: rgba(220,38,38,.95); }
+    .toast.ok { background: rgba(7,160,78,.95); }
+
+    /* P4 Follow-up */
+    .fu-group { display: flex; flex-direction: column; gap: 6px; }
+    .fu-group .chips { overflow: visible; flex-wrap: wrap; }
+
+    /* P5 Action Block */
+    .action-block { background: #FFF4F3; border: 1px solid #FFD9D4; border-radius: 12px; padding: 12px; }
+    .action-block.ok { background: var(--green-bg); border-color: #BAEACA; }
+    .action-title { font-size: 14px; font-weight: 800; color: var(--red); }
+    .action-block.ok .action-title { color: #009A29; }
+    .todo-row { display: flex; align-items: center; gap: 8px; background: #fff; border-radius: 9px; padding: 8px 10px; margin-top: 8px; }
+    .todo-name { font-weight: 600; font-size: 12.5px; }
+    .todo-sub { font-size: 10.5px; color: var(--text-3); max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .assign-select { width: 74px; padding: 4px 4px; font-size: 11px; border-radius: 6px; border: 1px solid var(--border); background: #fff; color: var(--text-2); }
+    .more-btn { width: 26px; height: 26px; border-radius: 50%; background: var(--bg-app); border: 1px solid var(--border); color: var(--text-2); font-size: 16px; line-height: 1; display: flex; align-items: center; justify-content: center; }
+    .member-row { display: flex; align-items: center; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid #F2F3F5; }
+    .member-row:last-child { border-bottom: none; }
+
+    /* Poster */
+    .poster-frame { background: linear-gradient(155deg,#0F2A5E,#1A56DB); border-radius: 12px; padding: 12px; color: #fff; }
+
+    /* Screenshot Mode */
+    body.shot-mode { background: #fff; }
+    body.shot-mode .demo-bar { display: none; }
+    .exit-shot { display: none; position: fixed; right: 16px; bottom: 16px; z-index: 200; background: #1D2129; color: #fff; padding: 8px 14px; border-radius: 99px; font-size: 12px; font-weight: 600; box-shadow: 0 6px 18px rgba(0,0,0,.2); }
+    body.shot-mode .exit-shot { display: inline-flex; }
+    body.shot-mode.flat { background: var(--bg-app); }
+    body.shot-mode.flat .stage { padding: 0; }
+    body.shot-mode.flat .phone { width: 390px; height: 780px; border: none; border-radius: 0; box-shadow: none; }
+    body.shot-mode.flat .exit-shot { display: none; }
+  </style>
+</head>
+<body>
+
+  <!-- Top Reviewer Demo Bar -->
+  <header class="demo-bar">
+    <div class="demo-brand">
+      <div class="demo-logo">酷</div>
+      <div>
+        <div style="font-weight:700;font-size:13px">酷家乐 · 大家居营销助手</div>
+        <div style="font-size:10.5px;color:var(--text-3)">曾洪铭-广东工业大学2024级硕士 · 5屏可交互原型</div>
+      </div>
+    </div>
+    <div class="demo-controls">
+      <div class="seg" title="角色视角">
+        <button class="seg-btn" id="r-sales" onclick="setRole('sales')">销售/导购 (小林)</button>
+        <button class="seg-btn" id="r-owner" onclick="setRole('owner')">C端业主 (陈女士)</button>
+        <button class="seg-btn" id="r-boss" onclick="setRole('boss')">老板/店长 (张总)</button>
+      </div>
+      <div class="seg ind-seg" title="业态切换">
+        <button class="seg-btn" id="i-custom" onclick="setIndustry('custom')">定制家居门店 (默认)</button>
+        <button class="seg-btn" id="i-deco" onclick="setIndustry('deco')">装修企业</button>
+      </div>
+      <div class="seg" title="快捷切屏">
+        <button class="seg-btn" id="n-p1" onclick="go('p1')">①方案库</button>
+        <button class="seg-btn" id="n-p2" onclick="go('p2')">②方案页</button>
+        <button class="seg-btn" id="n-p3" onclick="go('p3')">③留资页</button>
+        <button class="seg-btn" id="n-p4" onclick="go('p4')">④我的客户</button>
+        <button class="seg-btn" id="n-p5" onclick="go('p5')">⑤团队概览</button>
+      </div>
+      <span style="font-size:10.5px;color:var(--text-3);white-space:nowrap">异常状态</span>
+      <button class="anom-btn" id="a-empty" onclick="toggleAnom('emptyP1')">方案库空态</button>
+      <button class="anom-btn" id="a-weak" onclick="toggleAnom('weakP2')">方案页弱网</button>
+      <button class="anom-btn" id="a-noperm" onclick="triggerNoPerm()">团队无权限</button>
+      <button class="anom-btn" id="a-cold" onclick="toggleCold()" title="正常状态：暂无数据时的推荐排序">冷启动期</button>
+      <button class="shot-btn" onclick="toggleShot()">纯净截图模式</button>
+    </div>
+  </header>
+
+  <button class="exit-shot" onclick="toggleShot()">✕ 退出截图模式</button>
+
+  <!-- Centered Phone Frame -->
+  <main class="stage">
+    <div class="phone">
+      <div class="wx-top">
+        <div class="wx-status">
+          <span>9:41</span>
+          <span>5G · 98%</span>
+        </div>
+        <div class="wx-nav">
+          <div id="wx-left" style="min-width:60px"></div>
+          <div class="wx-title" id="wx-title">企业方案库</div>
+          <div class="wx-capsule"><span>•••</span><span class="wx-cap-div"></span><span>◎</span></div>
+        </div>
+      </div>
+
+      <div class="viewport" id="viewport"></div>
+
+      <nav class="tabbar" id="tabbar">
+        <button class="tab-btn" id="tb-p1" onclick="go('p1')"><span>🏠</span><span>方案库</span></button>
+        <button class="tab-btn" id="tb-p4" onclick="go('p4')"><span>👥</span><span>我的客户</span><span class="tab-badge" id="bd-p4" style="display:none">0</span></button>
+        <button class="tab-btn" id="tb-p5" onclick="go('p5')"><span>📊</span><span>团队概览</span><span class="tab-badge" id="bd-p5" style="display:none">0</span></button>
+      </nav>
+
+      <div class="toast" id="toast"></div>
+      <div class="overlay" id="overlay" onclick="if(event.target===this)closeModal()"></div>
+    </div>
+  </main>
+
+  <script>
+    /* ========================================================================
+       Inline SVG Interior Illustrations & Dynamic QR Code
+       ======================================================================== */
+    function svgImg(type) {
+      const m = {
+        wardrobe: `<svg viewBox="0 0 360 160" xmlns="http://www.w3.org/2000/svg"><rect width="360" height="128" fill="#F4F0E8"/><rect y="128" width="360" height="32" fill="#D2B48C"/><rect x="26" y="14" width="218" height="114" fill="#FAF9F6" stroke="#D5CEC3"/><line x1="82" y1="14" x2="82" y2="128" stroke="#DDD6CC"/><line x1="138" y1="14" x2="138" y2="128" stroke="#DDD6CC"/><rect x="190" y="16" width="52" height="110" fill="#4E4237"/><rect x="192" y="18" width="48" height="4" fill="#FFE28A"/><line x1="190" y1="52" x2="242" y2="52" stroke="#D8B67A"/><line x1="190" y1="86" x2="242" y2="86" stroke="#D8B67A"/><rect x="272" y="96" width="60" height="32" rx="3" fill="#B58D63"/><circle cx="302" cy="70" r="7" fill="#FFF3C4" stroke="#D9A84E"/><line x1="302" y1="0" x2="302" y2="63" stroke="#555"/></svg>`,
+        kitchen: `<svg viewBox="0 0 360 160" xmlns="http://www.w3.org/2000/svg"><rect width="360" height="126" fill="#EEF2F6"/><rect y="126" width="360" height="34" fill="#C7CFD9"/><rect x="24" y="12" width="228" height="46" fill="#E6EAEF" stroke="#C5CDD6"/><rect x="24" y="58" width="228" height="3" fill="#FFE89E"/><rect x="24" y="61" width="228" height="28" fill="#FFF"/><rect x="24" y="89" width="228" height="40" fill="#5D6775"/><rect x="260" y="12" width="76" height="117" fill="#4B5461"/><rect x="270" y="46" width="56" height="32" rx="3" fill="#1F242D" stroke="#8C96A5"/><rect x="86" y="110" width="160" height="38" rx="3" fill="#FFF" stroke="#D0D7E0"/></svg>`,
+        entryway: `<svg viewBox="0 0 360 160" xmlns="http://www.w3.org/2000/svg"><rect width="360" height="128" fill="#F3EFE8"/><rect y="128" width="360" height="32" fill="#D5C7B6"/><rect x="30" y="14" width="234" height="114" fill="#EFECE6" stroke="#D2CBC0"/><rect x="92" y="54" width="114" height="34" fill="#B88E63"/><rect x="92" y="54" width="114" height="3" fill="#FFE89E"/><rect x="30" y="116" width="234" height="12" fill="#3D3833"/><rect x="264" y="14" width="64" height="114" fill="#C69D72"/><rect x="264" y="92" width="64" height="10" rx="2" fill="#6F5E50"/></svg>`,
+        living: `<svg viewBox="0 0 360 160" xmlns="http://www.w3.org/2000/svg"><rect width="360" height="122" fill="#F2F4F7"/><rect y="122" width="360" height="38" fill="#D5CBC0"/><rect x="22" y="14" width="106" height="98" fill="#DCEBFF" stroke="#FFF" stroke-width="3"/><rect x="150" y="16" width="186" height="104" fill="#E6E2DC"/><rect x="182" y="30" width="120" height="62" rx="3" fill="#1D2129"/><rect x="160" y="100" width="166" height="16" rx="2" fill="#FFF"/><rect x="24" y="96" width="112" height="36" rx="6" fill="#7D8C9D"/><rect x="152" y="126" width="90" height="18" rx="3" fill="#FFF" stroke="#CCC"/></svg>`
+      };
+      return m[type] || m.wardrobe;
+    }
+
+    function qrSVG(seed) {
+      return `<svg width="68" height="68" viewBox="0 0 68 68" xmlns="http://www.w3.org/2000/svg"><rect width="68" height="68" rx="6" fill="#fff"/><rect x="6" y="6" width="18" height="18" rx="2" fill="none" stroke="#1A56DB" stroke-width="3"/><rect x="11" y="11" width="8" height="8" fill="#1A56DB"/><rect x="44" y="6" width="18" height="18" rx="2" fill="none" stroke="#1A56DB" stroke-width="3"/><rect x="49" y="11" width="8" height="8" fill="#1A56DB"/><rect x="6" y="44" width="18" height="18" rx="2" fill="none" stroke="#1A56DB" stroke-width="3"/><rect x="11" y="49" width="8" height="8" fill="#1A56DB"/><rect x="30" y="10" width="8" height="8" fill="#1D2129"/><rect x="28" y="28" width="12" height="12" rx="3" fill="#1A56DB"/><rect x="46" y="30" width="14" height="6" fill="#1D2129"/><rect x="30" y="48" width="10" height="12" fill="#1D2129"/><rect x="46" y="46" width="14" height="14" fill="#1D2129"/></svg>`;
+    }
+
+    /* ========================================================================
+       Central Application State
+       ======================================================================== */
+    const state = {
+      role: 'sales',          // 'sales' | 'owner' | 'boss'
+      industry: 'custom',     // 'custom' | 'deco'
+      screen: 'p1',           // 'p1' | 'p2' | 'p3' | 'p4' | 'p5'
+      anom: { emptyP1: false, weakP2: false, noPermP5: false },
+      coldStart: false,
+      filterCustom: '全部',
+      filterDeco: '全部',
+      filterStyle: '全部',
+      selectedPlanId: 'c1',
+      sharedByEmpId: 'emp1',
+      panoActive: false,
+      panoOffset: -120,
+      carouselIdx: 0,
+      p4Status: '全部',
+      p3Tags: [],
+      inquiryMaterial: '',
+      p3Phone: '',
+      p3Code: '',
+      p3CodeSent: false,
+      p3Manual: false,
+      p3Receipt: null,
+      fuStatus: '',
+      fuLeadId: '',
+
+      plans: [
+        { id:'c1', ind:'custom', space:'衣柜', style:'现代简约', material:'爱格板 W1000', title:'主卧一门到顶衣柜 · 2.8m 极简收口', designer:'林工', is3D:true, hot:true, pin:true, seq:1, views7d:128, leads7d:5, img:'wardrobe',
+          materials:[{name:'爱格板 W1000 至尊白', code:'E0级 · 18mm', color:'#F5F3EE'},{name:'百隆 110° 阻尼铰链', code:'奥地利原装 · 静音缓冲', color:'#9CA3AF'},{name:'极简嵌入式隐形拉手', code:'哑光枪灰 · 铝合金', color:'#4B5563'}] },
+        { id:'c2', ind:'custom', space:'橱柜', style:'轻奢意式', material:'PET 肤感灰', title:'U型岛台一体橱柜 · 高柜嵌蒸烤箱', designer:'陈工', is3D:true, hot:true, seq:2, views7d:96, leads7d:4, img:'kitchen',
+          materials:[{name:'PET 肤感哑光暖灰门板', code:'抗指纹 · 防油污', color:'#6B7280'},{name:'20mm 赛丽石石英台面', code:'零渗透 · 耐高温', color:'#E5E7EB'},{name:'悍高调味拉篮 + 感应灯带', code:'304不锈钢 · 3000K', color:'#D1D5DB'}] },
+        { id:'c3', ind:'custom', space:'玄关', style:'原木奶油', material:'实木多层板', title:'入户悬浮玄关柜 · 换鞋凳一体收纳', designer:'林工', is3D:true, hot:true, seq:3, views7d:84, leads7d:3, img:'entryway',
+          materials:[{name:'北美白橡实木多层板', code:'ENF级 · 防潮防变形', color:'#C69D72'},{name:'免拉手反弹器 + 底部灯槽', code:'海蒂诗 · 感应亮灯', color:'#E5D5C3'}] },
+        { id:'d1', ind:'deco', community:'春江花园', layout:'三室两厅', area:'89㎡', style:'现代简约', title:'春江花园 89㎡ 三室两厅 · 客餐厅打通', designer:'林工', is3D:true, hot:true, pin:true, seq:1, views7d:142, leads7d:6, img:'living',
+          realPhotos:['客厅打通阳台完工实景','厨房双一字动线实景','主卧无主灯吊顶实景'] },
+        { id:'d2', ind:'deco', community:'保利天汇', layout:'四室两厅', area:'128㎡', style:'奶油原木', title:'保利天汇 128㎡ 精装微改 · 全屋定制联动', designer:'陈工', is3D:true, hot:true, seq:2, views7d:105, leads7d:4, img:'wardrobe',
+          realPhotos:['入户玄关完工实景','主卧衣帽间落地实景','餐厅西厨岛台实景'] },
+        { id:'d3', ind:'deco', community:'珠江帝景', layout:'两室一厅', area:'76㎡', style:'原木北欧', title:'珠江帝景 76㎡ 老房翻新 · 完工实拍', designer:'李工', is3D:false, hot:false, seq:3, views7d:51, leads7d:2, img:'entryway',
+          realPhotos:['老房客餐厅翻新后实景','卫生间干湿分离实景'] }
+      ],
+
+      members: [
+        { id:'emp1', name:'小林', role:'门店顾问', status:'active', uv:216, leads:7 },
+        { id:'emp2', name:'小周', role:'门店顾问', status:'active', uv:164, leads:5 },
+        { id:'emp3', name:'小李', role:'门店顾问', status:'active', uv:0, leads:0 }
+      ],
+
+      leads: [
+        { id:'L101', ind:'custom', name:'王女士', phone:'13922184561', tags:['全屋衣柜','预算3-5万'], planId:'c1', planTitle:'主卧一门到顶衣柜 · 2.8m 极简收口', ownerId:'emp1', status:'待处理', overdue:false, nextDate:addDays(3), trace:{sets:3,focus:'主卧衣柜',dur:'2分40秒'}, logs:[{t:'今天 09:15', text:'业主通过小林分享页主动授权留资', sys:true}] },
+        { id:'L102', ind:'custom', name:'刘先生', phone:'13688903312', tags:['橱柜定制'], planId:'c2', planTitle:'U型岛台一体橱柜 · 高柜嵌蒸烤箱', ownerId:'emp1', status:'跟进中', overdue:false, nextDate:addDays(2), trace:{sets:2,focus:'石英台面',dur:'1分12秒'}, logs:[{t:'昨天 15:20', text:'已电话确认厨房尺寸3.2m，约本周末到店看PET门板样板', sys:false}] },
+        { id:'L103', ind:'custom', name:'赵女士', phone:'13755129088', tags:['局部翻新'], planId:'c3', planTitle:'入户悬浮玄关柜 · 换鞋凳一体收纳', ownerId:'emp2', status:'待处理', overdue:true, nextDate:addDays(1), trace:{sets:1,focus:'玄关柜',dur:'46秒'}, logs:[{t:'前天 11:00', text:'分配后满 24 小时未记录跟进（已触发超时告警）', sys:true}] },
+        { id:'L104', ind:'custom', name:'顾先生', phone:'13566017723', tags:['全屋衣柜'], planId:'c1', planTitle:'主卧一门到顶衣柜 · 2.8m 极简收口', ownerId:null, status:'待处理', overdue:false, nextDate:'', logs:[{t:'今天 08:40', text:'门店立牌大码进入（无明确员工来源），进入待分配池', sys:true}] },
+        { id:'L105', ind:'custom', name:'吴女士', phone:'13844220011', tags:['全屋衣柜'], planId:'c1', planTitle:'主卧一门到顶衣柜 · 2.8m 极简收口', ownerId:'emp2', status:'已约初尺', overdue:false, nextDate:addDays(4), trace:{sets:4,focus:'次卧衣柜',dur:'1分55秒'}, logs:[{t:'今天 10:20', text:'已约本周六上门初尺', sys:false}] },
+        { id:'L106', ind:'custom', name:'郑先生', phone:'13711223344', tags:['橱柜定制'], planId:'c2', planTitle:'U型岛台一体橱柜 · 高柜嵌蒸烤箱', ownerId:'emp2', status:'已到店', overdue:false, nextDate:'', trace:{sets:2,focus:'岛台尺寸',dur:'58秒'}, logs:[{t:'昨天 16:00', text:'已到店看样，等待下订', sys:false}] },
+        { id:'L201', ind:'deco', name:'孙先生', phone:'13822334455', tags:['新房毛坯','89㎡'], planId:'d1', planTitle:'春江花园 89㎡ 三室两厅 · 客餐厅打通', ownerId:'emp1', status:'待处理', overdue:false, nextDate:addDays(14), trace:{sets:5,focus:'客厅打通',dur:'3分10秒'}, logs:[{t:'今天 09:05', text:'业主通过小林分享页预约免费量房', sys:true}] },
+        { id:'L202', ind:'deco', name:'周女士', phone:'13900112233', tags:['老房翻新'], planId:'d2', planTitle:'保利天汇 128㎡ 精装微改 · 全屋定制联动', ownerId:null, status:'待处理', overdue:false, nextDate:'', logs:[{t:'昨天 18:10', text:'无来源线索，进入待分配池', sys:true}] },
+        { id:'L203', ind:'deco', name:'冯女士', phone:'13500112299', tags:['新房毛坯'], planId:'d1', planTitle:'春江花园 89㎡ 三室两厅 · 客餐厅打通', ownerId:'emp2', status:'已约量房', overdue:false, nextDate:addDays(12), trace:{sets:3,focus:'主卧采光',dur:'2分05秒'}, logs:[{t:'今天 11:00', text:'已约下周三上门量房', sys:false}] }
+      ]
+    };
+
+    function addDays(n) {
+      const d = new Date(); d.setDate(d.getDate() + n);
+      return d.toISOString().slice(0, 10);
+    }
+    function mask(p) { return p.length >= 11 ? p.slice(0,3) + '****' + p.slice(7) : p; }
+    function getPlan(id) { return state.plans.find(p => p.id === id) || state.plans.find(p => p.ind === state.industry); }
+    function teamMembers() { return state.members.filter(m => m.ind === state.industry); }
+    function getEmp(id) { return teamMembers().find(m => m.id === id); }
+    function entName() { return state.industry === 'custom' ? '木语全屋定制 · 旗舰店' : '安心装饰 · 广州分公司'; }
+    function toast(msg, type='') {
+      const el = document.getElementById('toast');
+      el.textContent = msg; el.className = 'toast show ' + type;
+      clearTimeout(toast._t); toast._t = setTimeout(() => el.classList.remove('show'), 2400);
+    }
+    function openModal(html, center=false) {
+      const ov = document.getElementById('overlay');
+      ov.className = 'overlay open' + (center ? ' center' : '');
+      ov.innerHTML = html;
+    }
+    function closeModal() {
+      document.getElementById('overlay').className = 'overlay';
+    }
+
+    /* ========================================================================
+       Top Demo Bar Actions
+       ======================================================================== */
+    function setRole(role) {
+      closeModal();
+      state.role = role;
+      state.anom.noPermP5 = false;
+      if (role === 'owner' && !['p2','p3'].includes(state.screen)) state.screen = 'p2';
+      if (role === 'sales' && ['p2','p3'].includes(state.screen)) state.screen = 'p1';
+      if (role === 'boss') state.screen = 'p5';
+      render();
+    }
+    function setIndustry(ind) {
+      closeModal();
+      state.inquiryMaterial = '';
+      state.industry = ind;
+      state.selectedPlanId = ind === 'custom' ? 'c1' : 'd1';
+      state.p4Status = '全部';
+      state.filterStyle = '全部';
+      state.p3Tags = [];
+      state.p3Manual = false;
+      state.p3Phone = '';
+      state.p3Receipt = null;
+      state.fuStatus = '';
+      state.panoActive = false;
+      toast(ind === 'custom' ? '已切换：定制家居门店（提醒默认 3 天）' : '已切换：装修企业（提醒默认 14 天）');
+      render();
+    }
+    function go(scr) {
+      state.screen = scr;
+      state.panoActive = false;
+      if (scr === 'p2' || scr === 'p3') state.role = 'owner';
+      else if (scr === 'p5' && state.role === 'owner') state.role = 'boss';
+      else if ((scr === 'p1' || scr === 'p4') && state.role === 'owner') state.role = 'sales';
+      render();
+    }
+    function toggleAnom(key) {
+      state.anom[key] = !state.anom[key];
+      if (key === 'emptyP1' && state.anom.emptyP1) { state.role = 'sales'; state.screen = 'p1'; }
+      if (key === 'weakP2' && state.anom.weakP2) { state.role = 'owner'; state.screen = 'p2'; state.panoActive = false; }
+      render();
+    }
+    function triggerNoPerm() {
+      state.anom.noPermP5 = !state.anom.noPermP5;
+      if (state.anom.noPermP5) { state.role = 'sales'; state.screen = 'p5'; }
+      else { state.role = 'boss'; state.screen = 'p5'; }
+      render();
+    }
+    function toggleShot() { document.body.classList.toggle('shot-mode'); }
+
+    /* ========================================================================
+       Main Render Orchestrator
+       ======================================================================== */
+    function render() {
+      // Sync Demo Bar
+      ['sales','owner','boss'].forEach(r => document.getElementById('r-'+r).classList.toggle('active', state.role===r));
+      ['custom','deco'].forEach(i => document.getElementById('i-'+i).classList.toggle('active', state.industry===i));
+      ['p1','p2','p3','p4','p5'].forEach(s => document.getElementById('n-'+s).classList.toggle('active', state.screen===s));
+      document.getElementById('a-empty').classList.toggle('active', state.anom.emptyP1);
+      document.getElementById('a-weak').classList.toggle('active', state.anom.weakP2);
+      document.getElementById('a-noperm').classList.toggle('active', state.anom.noPermP5 || (state.screen==='p5' && state.role==='sales'));
+      document.getElementById('a-cold').classList.toggle('active', state.coldStart);
+
+      // Phone Chrome & Badges
+      const titles = { p1:'方案库', p2: state.industry==='custom'?'木语全屋定制 · 3D方案':'安心装饰 · 3D方案', p3:'预约专属方案服务', p4:'我的客户', p5:'团队概览' };
+      document.getElementById('wx-title').textContent = titles[state.screen];
+      document.getElementById('wx-left').innerHTML = state.screen==='p3'
+        ? `<button style="font-size:13px;font-weight:600" onclick="go('p2')">‹ 返回</button>`
+        : '';
+
+      const isC = state.screen === 'p2' || state.screen === 'p3';
+      document.getElementById('tabbar').classList.toggle('hidden', isC);
+      ['p1','p4','p5'].forEach(t => document.getElementById('tb-'+t).classList.toggle('active', state.screen===t));
+
+      const myPending = state.leads.filter(l => l.ind===state.industry && l.ownerId==='emp1' && l.status==='待处理').length;
+      const unassigned = state.leads.filter(l => l.ind===state.industry && !l.ownerId).length;
+      const bd4 = document.getElementById('bd-p4'); bd4.style.display = myPending?'flex':'none'; bd4.textContent = myPending;
+      const bd5 = document.getElementById('bd-p5'); bd5.style.display = unassigned?'flex':'none'; bd5.textContent = unassigned;
+
+      // Render Active Screen
+      const vp = document.getElementById('viewport');
+      vp.scrollTop = 0;
+      if (state.screen === 'p1') vp.innerHTML = state.role === 'sales' && !getEmp('emp1') ? '<div class="pad"><div class="card">当前门店的员工账号已停用。</div></div>' : renderP1();
+      if (state.screen === 'p2') vp.innerHTML = renderP2();
+      if (state.screen === 'p3') vp.innerHTML = renderP3();
+      if (state.screen === 'p4') vp.innerHTML = renderP4();
+      if (state.screen === 'p5') vp.innerHTML = renderP5();
+    }
+
+    /* ========================================================================
+       P1: Enterprise Plan Library
+       ======================================================================== */
+    function renderP1() {
+      const isC = state.industry === 'custom';
+      const name = entName();
+      const filters = isC ? ['全部','衣柜','橱柜','玄关','餐边柜'] : ['全部','春江花园','保利天汇','珠江帝景'];
+      const curF = isC ? state.filterCustom : state.filterDeco;
+      const styles = ['全部', ...new Set(state.plans.filter(p => p.ind === state.industry).map(p => p.style))];
+      const curS = state.filterStyle;
+
+      let html = `
+        <div class="pad stack">
+          <div class="card between">
+            <div>
+              <div style="font-weight:700;font-size:14.5px">${name}</div>
+              <div style="font-size:11px;color:var(--text-3);margin-top:2px">已连接酷家乐企业账号</div>
+            </div>
+            <span class="badge b-blue">${isC ? '定制家居门店' : '装修企业'}</span>
+          </div>
+
+          <div class="row">
+            <button class="btn btn-primary" style="flex:1.3" onclick="openSyncModal()">⚡ 同步酷家乐 3D 方案</button>
+            <button class="btn btn-outline" style="flex:1" onclick="openUploadModal()">📷 上传本地实拍</button>
+          </div>
+
+          <div class="chips">
+            ${filters.map(f => `<button class="chip ${curF===f?'active':''}" onclick="setP1Filter('${f}')">${f}</button>`).join('')}
+          </div>
+          <div class="chips">
+            ${styles.map(s => `<button class="chip ${curS===s?'active':''}" onclick="setP1Style('${s}')">${s}</button>`).join('')}
+          </div>
+      `;
+
+      if (state.anom.emptyP1) {
+        return html + `
+          <div class="card" style="text-align:center;padding:34px 18px;margin-top:8px">
+            <div style="font-size:34px;margin-bottom:8px">📦</div>
+            <div style="font-weight:700;font-size:14.5px;margin-bottom:6px">还没有可分享的方案</div>
+            <div style="font-size:12px;color:var(--text-3);margin-bottom:16px;line-height:1.6">
+              从酷家乐把做好的 3D 方案同步过来，或者上传几张完工实拍照片，就能直接发给客户看。
+            </div>
+            <div class="row" style="justify-content:center">
+              <button class="btn btn-primary btn-sm" onclick="toggleAnom('emptyP1');openSyncModal()">从酷家乐同步</button>
+              <button class="btn btn-outline btn-sm" onclick="toggleAnom('emptyP1');openUploadModal()">上传本地实拍</button>
+            </div>
+          </div></div>`;
+      }
+
+      let list = state.plans.filter(p => p.ind === state.industry
+        && (curF === '全部' || p.space === curF || p.community === curF)
+        && (curS === '全部' || p.style === curS));
+
+      if (state.coldStart) {
+        list = [...list].sort((a, b) => (b.pin ? 1 : 0) - (a.pin ? 1 : 0) || (b.seq || 0) - (a.seq || 0));
+        html += `<div style="font-size:11px;color:#B25000;background:var(--orange-bg);border:1px solid #FFD591;padding:7px 10px;border-radius:8px;line-height:1.55">冷启动期：暂无足够的打开与咨询信号，先按同步时间倒序，店长可手动置顶</div>`;
+      }
+
+      const groupKey = isC ? 'space' : 'community';
+      const groups = new Map();
+      list.forEach(p => {
+        const k = p[groupKey] || '其他';
+        if (!groups.has(k)) groups.set(k, []);
+        groups.get(k).push(p);
+      });
+
+      groups.forEach((items, gName) => {
+        html += `<div class="grp-hd" style="margin:6px 0 0">${gName}</div>`;
+        html += items.map(p => {
+          const t1 = isC ? p.space : p.community;
+          const t2 = p.style;
+          return `
+          <div class="plan-card" onclick="previewAsOwner('${p.id}')">
+            <div class="plan-img">
+              ${planImage(p)}
+              <div class="img-tags">
+                ${p.is3D ? '<span class="t-3d">720° 3D</span>' : '<span class="t-local">本地实拍</span>'}
+                ${p.pin ? '<span class="t-pin">店长置顶</span>' : ''}
+                ${(!state.coldStart && p.hot) ? '<span class="t-hot">今日推荐发</span>' : ''}
+              </div>
+            </div>
+            <div class="plan-body">
+              <div class="plan-title">${htmlText(p.title)}</div>
+              <div class="row" style="gap:5px;margin-bottom:9px">
+                <span class="badge b-gray">${t1}</span>
+                <span class="badge b-gray">${t2}</span>
+              </div>
+              <div class="between">
+                <div class="plan-meta">${p.designer}设计 · 本周 ${p.views7d} 人看过 · ${p.leads7d} 条咨询</div>
+                <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();openShareModal('${p.id}')">分享</button>
+              </div>
+            </div>
+          </div>`;
+        }).join('');
+      });
+
+      html += `</div>`;
+      return html;
+    }
+
+    function setP1Style(s) { state.filterStyle = s; render(); }
+    function toggleCold() {
+      state.coldStart = !state.coldStart;
+      if (state.coldStart) { state.role = 'sales'; state.screen = 'p1'; }
+      render();
+    }
+
+    function setP1Filter(f) {
+      if (state.industry === 'custom') state.filterCustom = f; else state.filterDeco = f;
+      render();
+    }
+
+    function openShareModal(planId, mode='card') {
+      const emp = getEmp('emp1');
+      if (!emp || emp.status !== 'active') {
+        toast('账号已冻结，暂时无法分享', 'err'); return;
+      }
+      const p = getPlan(planId);
+      const name = entName();
+      openModal(`
+        <div class="sheet">
+          <div class="sheet-hd"><span>分享这套方案</span><button onclick="closeModal()">✕</button></div>
+          <div class="sheet-bd stack">
+            <div class="seg" style="width:100%">
+              <button class="seg-btn ${mode==='card'?'active':''}" style="flex:1" onclick="openShareModal('${planId}','card')">微信好友卡片</button>
+              <button class="seg-btn ${mode==='poster'?'active':''}" style="flex:1" onclick="openShareModal('${planId}','poster')">朋友圈海报</button>
+            </div>
+            ${mode === 'card' ? `
+              <div class="card" style="background:#F7F8FA">
+                <div style="font-size:11px;color:var(--text-3);margin-bottom:6px">好友收到的样子</div>
+                <div style="background:#fff;border-radius:8px;padding:10px;border:1px solid var(--border)">
+                  <div class="row" style="margin-bottom:6px"><span class="badge b-blue">酷</span><span style="font-size:11.5px;color:var(--text-2)">${name}</span></div>
+                  <div style="font-weight:700;font-size:13px;margin-bottom:6px">${htmlText(p.title)}</div>
+                  <div style="height:110px;border-radius:6px;overflow:hidden">${planImage(p)}</div>
+                  <div style="font-size:10.5px;color:var(--text-3);margin-top:6px">${p.is3D ? '点击查看全景方案' : '点击查看案例照片'}</div>
+                </div>
+              </div>
+            ` : `
+              <div class="poster-frame">
+                <div class="between" style="margin-bottom:8px">
+                  <span style="font-weight:700;font-size:13px">${name}</span>
+                  <span style="font-size:10.5px;opacity:.85">门店统一海报</span>
+                </div>
+                <div style="background:#fff;border-radius:8px;overflow:hidden;color:var(--text-1)">
+                  <div style="height:110px">${planImage(p)}</div>
+                  <div class="between" style="padding:10px">
+                    <div style="flex:1">
+                      <div style="font-weight:700;font-size:12.5px;margin-bottom:4px">${htmlText(p.title)}</div>
+                      <div style="font-size:10.5px;color:var(--text-3);line-height:1.5">海报预览<br/>${p.is3D ? '查看全景方案' : '查看案例照片'}</div>
+                    </div>
+                    ${qrSVG(planId)}
+                  </div>
+                </div>
+              </div>
+            `}
+            <div style="font-size:11px;color:var(--text-3);background:var(--bg-app);padding:8px 10px;border-radius:6px;line-height:1.5">
+              新客户由分享顾问接待，已有在跟客户的复询会交给原负责人。
+            </div>
+            <button class="btn btn-wechat btn-block" style="padding:11px;font-size:14px" onclick="finishShare('${planId}')">
+              ${mode==='card' ? '以收件人身份打开卡片' : '预览扫码后的页面'}
+            </button>
+          </div>
+        </div>
+      `);
+    }
+
+    function finishShare(planId) {
+      closeModal();
+      previewAsOwner(planId);
+    }
+
+    function syncCandidate() {
+      return state.industry === 'custom'
+        ? { id:'c_new', ind:'custom', title:'餐边柜与西厨岛台 · 一体化定制', space:'餐边柜', img:'kitchen', materials:[{name:'爱格板 U702 羊绒灰',code:'18mm',color:'#D1CFC9'}] }
+        : { id:'d_new', ind:'deco', title:'春江花园 98㎡ · 客餐厅改造', community:'春江花园', area:'98㎡', layout:'三室两厅', img:'living' };
+    }
+    function openSyncModal() {
+      const plan = syncCandidate();
+      const exists = state.plans.some(entry => entry.id === plan.id);
+      openModal(`<div class="modal-box"><div class="sheet-hd"><span>同步企业方案</span><button onclick="closeModal()">✕</button></div>
+        <div class="sheet-bd stack"><div>${entName()}</div><strong>${plan.title}</strong><span>设计师：林工 · 720° 全景</span>
+        <button class="btn btn-primary btn-block" onclick="confirmSync()" ${exists?'disabled':''}>${exists?'已在方案库':'同步到方案库'}</button></div></div>`, true);
+    }
+    function confirmSync() {
+      const plan = syncCandidate();
+      if (!state.plans.some(entry => entry.id === plan.id)) state.plans.unshift({...plan, designer:'林工', style:'现代简约', is3D:true, hot:false, views7d:0, leads7d:0});
+      state.anom.emptyP1 = false; closeModal(); setP1Filter('全部'); toast('方案已同步','ok');
+    }
+    function openUploadModal() {
+      openModal(`
+        <div class="modal-box">
+          <div class="sheet-hd"><span>上传本地实拍</span><button onclick="closeModal()">✕</button></div>
+          <div class="sheet-bd stack">
+            <input class="input" id="up-title" placeholder="给这组照片起个名字" maxlength="100" />
+            <div style="font-size:11px;color:var(--text-3)">选择这组案例的图片</div><input type="file" id="up-files" accept="image/*" multiple />
+            <button class="btn btn-primary btn-block" onclick="confirmUpload()">上传到方案库</button>
+          </div>
+        </div>
+      `, true);
+    }
+    function confirmUpload() {
+      const t = document.getElementById('up-title').value.trim() || '本地实拍案例';
+      const files = Array.from(document.getElementById('up-files').files);
+      if (!files.length || files.some(f => !f.type.startsWith('image/'))) { toast('请选择案例图片','err'); return; }
+      state.plans.unshift({ id:'loc_'+Date.now(), ind:state.industry, title:t, designer:'门店', space:'实拍', community:'本地案例', style:'实拍', photos:files.map(f=>URL.createObjectURL(f)), is3D:false, hot:false, views7d:0, leads7d:0 });
+      state.anom.emptyP1 = false; closeModal(); setP1Filter('全部'); toast('照片已上传','ok');
+    }
+    function htmlText(value) {
+      return String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
+    }
+    function planImage(p, index=0) {
+      return p.photos ? `<img src="${p.photos[index]}" alt="案例照片" style="width:100%;height:100%;object-fit:cover">` : svgImg(p.img);
+    }
+    function previewAsOwner(planId) {
+      state.p3Phone = ''; state.inquiryMaterial = ''; state.p3Tags = []; state.carouselIdx = 0;
+      state.selectedPlanId = planId;
+      state.sharedByEmpId = 'emp1';
+      state.role = 'owner';
+      state.screen = 'p2';
+      state.panoActive = false;
+      state.p3Manual = false;
+      state.p3Receipt = null;
+      render();
+    }
+
+    /* ========================================================================
+       P2: C-Side Owner 3D Plan Page
+       ======================================================================== */
+    function renderP2() {
+      const p = getPlan(state.selectedPlanId);
+      const isC = state.industry === 'custom';
+      const emp = getEmp(state.sharedByEmpId);
+      const isOffboard = !emp || emp.status !== 'active';
+      const store = entName();
+
+      let heroHtml = '';
+      if (p.photos) {
+        heroHtml = `<div class="hero">${planImage(p,state.carouselIdx % p.photos.length)}</div>${p.photos.length>1?`<button class="btn btn-ghost btn-block" onclick="state.carouselIdx++;render()">下一张 · ${state.carouselIdx % p.photos.length+1}/${p.photos.length}</button>`:''}`;
+      } else if (p.is3D && state.anom.weakP2) {
+        const angles = ['主视角高清效果图', '收纳与材质细节', '空间动线俯视图'];
+        heroHtml = `
+          <div style="background:var(--orange-bg);color:#B25000;padding:7px 12px;font-size:11.5px" class="between">
+            <span>网络有点慢，先看高清大图</span>
+            <button class="btn btn-sm" style="background:#fff;color:var(--orange);border:1px solid #FFD591" onclick="toggleAnom('weakP2')">重新加载 3D</button>
+          </div>
+          <div class="hero">
+            ${planImage(p)}
+            <div style="position:absolute;bottom:10px;left:12px;right:12px" class="between">
+              <button class="btn btn-sm" style="background:rgba(0,0,0,.6);color:#fff" onclick="state.carouselIdx=(state.carouselIdx+2)%3;render()">‹</button>
+              <span style="background:rgba(0,0,0,.6);color:#fff;padding:3px 10px;border-radius:99px;font-size:11px">${angles[state.carouselIdx]} (${state.carouselIdx+1}/3)</span>
+              <button class="btn btn-sm" style="background:rgba(0,0,0,.6);color:#fff" onclick="state.carouselIdx=(state.carouselIdx+1)%3;render()">›</button>
+            </div>
+          </div>`;
+      } else if (state.panoActive) {
+        heroHtml = `
+          <div class="hero">
+            <div class="pano-stage" onmousedown="startPano(event)" ontouchstart="startPano(event)">
+              <div class="pano-track" id="pano-track" style="transform:translateX(${state.panoOffset}px);display:flex">
+                <div style="width:390px;height:224px">${planImage(p)}</div>
+                <div style="width:390px;height:224px">${svgImg(p.img==='wardrobe'?'entryway':'kitchen')}</div>
+              </div>
+              <div class="pano-hud">
+                <span style="background:rgba(0,0,0,.65);color:#fff;padding:3px 9px;border-radius:99px;font-size:11px">↔ 左右拖动 360° 漫游</span>
+                <button class="btn btn-sm" style="background:#fff;color:var(--text-1)" onclick="state.panoActive=false;render()">退出全景</button>
+              </div>
+            </div>
+          </div>`;
+      } else {
+        heroHtml = `
+          <div class="hero">
+            ${planImage(p)}
+            ${p.is3D ? `<button class="enter-3d" onclick="state.panoActive=true;render()">🔄 进入 720° 3D 全景漫游</button>` : ''}
+          </div>`;
+      }
+
+      const middleHtml = p.photos || (isC && !p.materials?.length) ? '' : isC ? `
+        <div class="card stack">
+          <div class="between"><span style="font-weight:700;font-size:13.5px">这套方案用的材料</span><span class="badge b-blue">官方材料清单</span></div>
+          ${p.materials.map((m,i) => `
+            <div class="row" style="background:var(--bg-app);padding:8px;border-radius:8px">
+              <div style="width:26px;height:26px;border-radius:6px;background:${m.color};border:1px solid rgba(0,0,0,.1)"></div>
+              <div><div style="font-weight:600;font-size:12.5px">${m.name}</div><div style="font-size:11px;color:var(--text-3)">${m.code}</div></div><button class="btn btn-outline btn-sm" style="margin-left:auto" onclick="startInquiry(${i})">${m.name.includes('台面')?'问这款台面':'询问这款材料'}</button>
+            </div>
+          `).join('')}
+        </div>` : `
+        <div class="card stack">
+          <div class="between"><span style="font-weight:700;font-size:13.5px">户型与完工实景</span><span class="badge b-gray">${p.area || '89㎡'} · ${p.layout || '三室两厅'}</span></div>
+          <div class="row" style="font-size:11.5px;color:var(--text-2)">
+            <span>小区：${p.community || '春江花园'}</span><span>·</span><span>风格：${p.style}</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+            ${(p.realPhotos || ['客厅实景','厨房实景','卧室实景']).map(ph => `
+              <div style="background:var(--bg-app);border-radius:6px;padding:12px 6px;text-align:center;font-size:10.5px;color:var(--text-2);border:1px solid var(--border)">📷<br/>${ph}</div>
+            `).join('')}
+          </div>
+        </div>`;
+
+      return `
+        ${heroHtml}
+        <div class="pad stack">
+          <div class="card">
+            <div style="font-weight:700;font-size:15px;line-height:1.4">${htmlText(p.title)}</div>
+          </div>
+          ${middleHtml}
+          <div class="card between">
+            <div class="row">
+              <div style="width:36px;height:36px;border-radius:50%;background:var(--brand-light);color:var(--brand);font-weight:700;display:flex;align-items:center;justify-content:center">
+                ${isOffboard ? '店' : emp.name[0]}
+              </div>
+              <div>
+                <div class="row" style="gap:5px">
+                  <span style="font-weight:700;font-size:13px">${isOffboard ? store : emp.name + ' · 门店顾问'}</span>
+                  ${isOffboard ? '' : '<span class="badge b-green">企业认证</span>'}
+                </div>
+                <div style="font-size:11px;color:var(--text-3)">${isOffboard ? '官方服务顾问' : store}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="sticky-cta">
+          <button class="btn btn-primary btn-block" style="padding:11px;font-size:14px" onclick="startInquiry()">
+            ${isC ? '预约免费上门初尺' : '预约免费量房'}
+          </button>
+        </div>
+      `;
+    }
+
+    function startPano(e) {
+      const startX = e.touches ? e.touches[0].clientX : e.clientX;
+      const orig = state.panoOffset;
+      function move(ev) {
+        const curX = ev.touches ? ev.touches[0].clientX : ev.clientX;
+        state.panoOffset = Math.max(-390, Math.min(0, orig + (curX - startX)));
+        const tr = document.getElementById('pano-track');
+        if (tr) tr.style.transform = `translateX(${state.panoOffset}px)`;
+      }
+      function end() {
+        window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', end);
+        window.removeEventListener('touchmove', move); window.removeEventListener('touchend', end);
+      }
+      window.addEventListener('mousemove', move); window.addEventListener('mouseup', end);
+      window.addEventListener('touchmove', move); window.addEventListener('touchend', end);
+    }
+
+    /* ========================================================================
+       P3: C-Side Lead Capture Page
+       ======================================================================== */
+    function startInquiry(index) {
+      const p = getPlan(state.selectedPlanId);
+      state.inquiryMaterial = p.materials?.[index]?.name || '';
+      state.p3Manual = false; state.p3Receipt = null; state.p3Tags = []; state.p3Phone = '';
+      go('p3');
+    }
+    function renderP3() {
+      const p = getPlan(state.selectedPlanId);
+      const isC = state.industry === 'custom';
+      const store = entName();
+      const tags = isC ? ['全屋衣柜','橱柜','到店看样'] : ['新房毛坯','老房翻新','局部改造'];
+      const ctaText = state.inquiryMaterial ? '同意门店回电询价' : isC ? '微信一键预约免费初尺' : '微信一键预约免费量房';
+
+      if (state.p3Receipt) {
+        return `
+          <div class="pad stack" style="padding-top:36px">
+            <div class="card" style="text-align:center;padding:28px 16px">
+              <div style="font-size:40px;margin-bottom:8px">✅</div>
+              <div style="font-weight:700;font-size:16px;margin-bottom:6px">${state.inquiryMaterial ? '询价已提交' : '预约已提交'}</div>
+              <div style="font-size:12.5px;color:var(--text-2);margin-bottom:14px">
+                ${state.p3Receipt.assignedTo
+                  ? `由顾问 ${state.p3Receipt.assignedTo} 跟进`
+                  : '已交给门店，待安排顾问'}
+              </div>
+              <div style="background:var(--bg-app);padding:10px;border-radius:8px;font-size:11.5px;color:var(--text-2);text-align:left;margin-bottom:16px;line-height:1.7">
+                咨询方案：${htmlText(p.title)}<br/>
+                预留号码：${mask(state.p3Receipt.phone)}<br/>
+                ${state.p3Receipt.tags.length ? `想了解：${state.p3Receipt.tags.join(' / ')}` : ''}
+              </div>
+              <button class="btn btn-primary btn-block" onclick="state.p3Receipt=null;go('p2')">返回继续看方案</button>
+            </div>
+          </div>`;
+      }
+
+      return `
+        <div class="pad stack">
+          <div class="card row">
+            <div style="width:56px;height:42px;border-radius:6px;overflow:hidden;flex-shrink:0">${planImage(p)}</div>
+            <div style="flex:1;min-width:0;font-weight:700;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${htmlText(p.title)}</div>
+          </div>
+
+          <div class="card stack">
+            <div style="font-weight:700;font-size:13px">${state.inquiryMaterial ? `回电询价 · ${state.inquiryMaterial}` : '想了解什么？（可跳过）'}</div>
+            <div class="chips wrap">
+              ${tags.map(t => `<button class="chip ${state.p3Tags.includes(t)?'active':''}" onclick="toggleP3Tag('${t}')">${t}</button>`).join('')}
+            </div>
+          </div>
+
+          <div class="stack" style="gap:9px;padding-top:2px">
+            <button class="btn btn-wechat btn-block" style="padding:12px;font-size:14.5px;border-radius:10px" onclick="openWxAuth()">${ctaText}</button>
+            <div style="font-size:10.5px;color:var(--text-3);text-align:center;line-height:1.6">
+              酷家乐提供技术支持 · 提交即同意<button style="font-size:10.5px;color:var(--brand);text-decoration:underline" onclick="openPrivacy()">《隐私政策》</button>，联系方式及本次方案偏好将提供给「${store}」
+            </div>
+            <div class="row" style="gap:8px;margin-top:2px">
+              <span style="flex:1;height:1px;background:var(--border)"></span>
+              <span style="font-size:10.5px;color:var(--text-3);white-space:nowrap">或手动填写</span>
+              <span style="flex:1;height:1px;background:var(--border)"></span>
+            </div>
+            <div class="stack" style="gap:8px">
+              <input class="input" id="p3-phone" maxlength="11" inputmode="numeric" placeholder="请输入 11 位手机号" value="${state.p3Phone}" oninput="state.p3Phone=this.value" />
+              <div class="row">
+                <input class="input" id="p3-code" maxlength="6" inputmode="numeric" placeholder="6 位短信验证码" value="${state.p3Code}" oninput="state.p3Code=this.value" />
+                <button class="btn ${state.p3CodeSent ? 'btn-ghost' : 'btn-outline'}" style="white-space:nowrap" onclick="sendCode()">${state.p3CodeSent ? '重新发送' : '获取验证码'}</button>
+              </div>
+              <button class="btn btn-ghost btn-block" onclick="submitLeadManual()">用这个号码提交预约</button>
+              <div style="text-align:center;font-size:11px;color:var(--text-3)">手填必须通过短信验证，避免误填他人号码</div>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function toggleP3Tag(t) {
+      if (state.p3Tags.includes(t)) state.p3Tags = state.p3Tags.filter(x => x !== t);
+      else state.p3Tags.push(t);
+      render();
+    }
+    function openPrivacy() {
+      openModal(`
+        <div class="sheet">
+          <div class="sheet-hd"><span>隐私政策</span><button onclick="closeModal()">✕</button></div>
+          <div class="sheet-bd stack">
+            <div style="font-size:12px;color:var(--text-2);line-height:1.75">
+              1. 您在本页填写的手机号，仅用于当前门店安排上门初尺 / 量房与方案沟通。<br/>
+              2. 酷家乐为本服务提供技术支持，不会将您的信息用于本服务之外的目的。<br/>
+              3. 您可以随时要求停止使用并删除已提交的联系方式。<br/>
+              4. 详情请见《酷家乐隐私政策》。
+            </div>
+            <button class="btn btn-ghost btn-block" onclick="withdrawConsent()">撤回同意 / 删除我的联系信息</button>
+          </div>
+        </div>
+      `);
+    }
+    function withdrawConsent() {
+      closeModal();
+      toast('已收到删除申请，门店将不再联系您', 'ok');
+    }
+    function openWxAuth() {
+      const isC = state.industry === 'custom';
+      const store = entName();
+      openModal(`
+        <div class="sheet">
+          <div class="sheet-hd"><span>酷家乐 申请获取你的手机号</span><button onclick="closeModal()">✕</button></div>
+          <div class="sheet-bd stack">
+            <div style="font-size:12px;color:var(--text-2)">用于向「${store}」${state.inquiryMaterial ? '咨询材料价格' : isC ? '预约免费初尺' : '预约免费量房'}</div>
+            <div class="card between" style="background:var(--bg-app)">
+              <span style="font-weight:700;font-size:15px">139****8866</span>
+              <span class="badge b-green">微信绑定号码</span>
+            </div>
+            <div class="row">
+              <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">拒绝</button>
+              <button class="btn btn-wechat" style="flex:1" onclick="closeModal();submitLead('13966778866')">允许</button>
+            </div>
+          </div>
+        </div>
+      `);
+    }
+    function submitLead(phone) {
+      if (!/^1[3-9]\d{9}$/.test(phone)) { toast('请输入有效的 11 位手机号', 'err'); return; }
+      if (phone === '13800138000') { toast('该号码暂不支持预约', 'err'); return; }
+      const p = getPlan(state.selectedPlanId);
+      const emp = getEmp(state.sharedByEmpId);
+      const activeEmp = emp && emp.status === 'active' ? emp : null;
+      if (state.p3Receipt) return;
+      const previous = state.leads.find(l => l.ind === state.industry && l.phone === phone);
+      const tags = state.inquiryMaterial ? ['询价',state.inquiryMaterial,...state.p3Tags] : [...state.p3Tags, state.industry === 'custom' ? '预约初尺' : '预约量房'];
+      const source = activeEmp?.name || '门店';
+      const eventText = [p.title,...tags,'来源：'+source].join(' · ');
+      const newLead = {
+        id: 'L' + Date.now(), ind: state.industry, name: '陈女士', phone,
+        tags,
+        planId: p.id, planTitle: p.title,
+        ownerId: activeEmp ? activeEmp.id : null,
+        status: '待处理', overdue: false,
+        nextDate: addDays(state.industry === 'custom' ? 3 : 14),
+        logs: [{ t: '刚刚', text: eventText, sys:true }]
+      };
+      let heatAgain = false;
+      if (previous) {
+        const owner = getEmp(previous.ownerId);
+        const idleDays = previous.lastFollowDays == null ? 99 : previous.lastFollowDays;
+        if (previous.status === '已结束') {
+          Object.assign(previous,{status:'待处理',contacted:false,overdue:false,nextDate:newLead.nextDate,ownerId:newLead.ownerId});
+          previous.logs.unshift({t:'刚刚',text:'重新咨询 · '+eventText,sys:true});
+        } else if (!owner || owner.status !== 'active') {
+          previous.ownerId = newLead.ownerId;
+          previous.logs.unshift({t:'刚刚',text:'原负责人已不可用，线索转入待分配 · '+eventText,sys:true});
+        } else if (idleDays > 7) {
+          previous.ownerId = activeEmp ? activeEmp.id : previous.ownerId;
+          previous.logs.unshift({t:'刚刚',text:'超 7 天未跟进，线索转交 '+source+' · '+eventText,sys:true});
+        } else {
+          heatAgain = true;
+          previous.logs.unshift({t:'刚刚',text:'客户再次活跃 · '+eventText,sys:true});
+        }
+        Object.assign(previous,{planId:p.id,planTitle:p.title,tags});
+      } else state.leads.unshift(newLead);
+      p.leads7d += 1;
+      if (activeEmp) activeEmp.leads += 1;
+      state.p3Receipt = { phone, tags: newLead.tags, assignedTo: getEmp((previous || newLead).ownerId)?.name || null };
+      toast(heatAgain ? '该客户已有顾问在跟，已提醒原负责人' : (state.inquiryMaterial ? '询价已提交' : '预约已提交'), 'ok');
+      render();
+    }
+
+    function sendCode() {
+      if (!/^1[3-9]\d{9}$/.test(state.p3Phone)) { toast('请先填写有效的 11 位手机号', 'err'); return; }
+      state.p3CodeSent = true;
+      toast('验证码已发送（演示码 123456）', 'ok');
+      render();
+    }
+    function submitLeadManual() {
+      if (!/^1[3-9]\d{9}$/.test(state.p3Phone)) { toast('请输入有效的 11 位手机号', 'err'); return; }
+      if (!state.p3CodeSent) { toast('请先获取短信验证码', 'err'); return; }
+      if (!/^\d{6}$/.test(state.p3Code)) { toast('请输入 6 位短信验证码', 'err'); return; }
+      if (state.p3Code !== '123456') { toast('验证码不正确', 'err'); return; }
+      submitLead(state.p3Phone);
+    }
+
+    /* ========================================================================
+       P4: Sales Leads & Follow-up
+       ======================================================================== */
+    function renderP4() {
+      const isC = state.industry === 'custom';
+      const tabs = isC ? ['全部','待处理','跟进中','已约初尺','已到店','已结束'] : ['全部','待处理','跟进中','已约量房','已看方案','已结束'];
+      const emp = getEmp('emp1');
+      if (!emp) return '<div class="pad"><div class="card">当前门店的员工账号已停用。</div></div>';
+      const isFrozen = emp.status === 'frozen';
+      const myLeads = state.leads.filter(l => l.ind === state.industry && l.ownerId === 'emp1');
+      const filtered = state.p4Status === '全部' ? myLeads : myLeads.filter(l => l.status === state.p4Status);
+
+      return `
+        <div style="background:#fff;padding:8px 10px;border-bottom:1px solid var(--border)">
+          <div class="chips">
+            ${tabs.map(t => `<button class="chip ${state.p4Status===t?'active':''}" onclick="state.p4Status='${t}';render()">${t}</button>`).join('')}
+          </div>
+        </div>
+        ${isFrozen ? `<div style="background:var(--red-bg);color:var(--red);padding:8px 12px;font-size:11.5px;font-weight:600">账号已冻结，只能查看，无法拨号与跟进</div>` : ''}
+        <div class="pad stack">
+          ${filtered.length === 0 ? `<div class="card" style="text-align:center;color:var(--text-3);padding:32px">这里还没有客户</div>` : ''}
+          ${filtered.map(l => `
+            <div class="card stack" style="gap:8px">
+              <div class="between">
+                <div class="row">
+                  <span style="font-weight:700;font-size:14.5px">${l.name}</span>
+                  <span style="font-size:12px;color:var(--text-2)">${mask(l.phone)}</span>
+                </div>
+                <span class="badge ${l.status==='待处理'?'b-red':(l.status==='已结束'?'b-gray':'b-blue')}">${l.status}</span>
+              </div>
+              <div class="row" style="flex-wrap:wrap;gap:5px">
+                ${l.tags.map(t => `<span class="badge b-orange">${t}</span>`).join('')}
+              </div>
+              <div style="font-size:11.5px;color:var(--text-2);background:var(--bg-app);padding:6px 8px;border-radius:6px;line-height:1.5">
+                看的方案：<strong>${htmlText(l.planTitle)}</strong>
+              </div>
+              ${l.trace ? `<div class="trace-box">👁 已授权浏览轨迹 · 看过 ${l.trace.sets} 套 · 最关注：${l.trace.focus}（停留 ${l.trace.dur}）</div>` : ''}
+              <div style="font-size:11px;color:var(--text-3);line-height:1.5">
+                ${l.logs[0].t} · ${htmlText(l.logs[0].text)}
+                ${l.logs.length > 1 ? `<details><summary>查看历史记录</summary>${l.logs.slice(1).map(log=>`<p>${log.t} · ${htmlText(log.text)}</p>`).join('')}</details>` : ''}
+                ${l.nextDate ? `<br/>下次提醒：${l.nextDate}` : ''}
+              </div>
+              <div class="row">
+                <button class="btn btn-outline btn-sm" style="flex:1" ${isFrozen?'disabled':''} onclick="toast('正在拨打 ${mask(l.phone)}')">📞 打电话</button>
+                <button class="btn btn-primary btn-sm" style="flex:1" ${isFrozen?'disabled':''} onclick="openFollowupModal('${l.id}')">✏️ 记跟进</button>
+              </div>
+            </div>
+          `).join('')}
+        </div>`;
+    }
+
+    function openFollowupModal(leadId) {
+      const l = state.leads.find(x => x.id === leadId);
+      const isC = state.industry === 'custom';
+      const opts = isC ? ['跟进中','已约初尺','已到店','已结束'] : ['跟进中','已约量房','已看方案','已结束'];
+      const quick = isC ? ['已电话沟通','约到店看样','暂未接通','再发方案'] : ['已电话沟通','约量房时间','暂未接通','再发方案'];
+      const defDays = isC ? 3 : 14;
+      state.fuStatus = opts.includes(l.status) ? l.status : opts[0];
+      state.fuLeadId = leadId;
+      openModal(`
+        <div class="sheet">
+          <div class="sheet-hd"><span>记跟进 · ${l.name}</span><button onclick="closeModal()">✕</button></div>
+          <div class="sheet-bd stack">
+            <div class="fu-group">
+              <div class="field-label">这次聊到哪一步？</div>
+              <div class="chips">
+                ${opts.map(o => `<button class="chip ${state.fuStatus===o?'active':''}" onclick="setFuStatus(this,'${o}')">${o}</button>`).join('')}
+              </div>
+            </div>
+            <div class="fu-group">
+              <div class="field-label">快捷记录</div>
+              <div class="chips">
+                ${quick.map(q => `<button class="chip q" onclick="fuQuick('${q}')">${q}</button>`).join('')}
+              </div>
+            </div>
+            <div class="fu-group">
+              <div class="field-label">备注（选填）</div>
+              <select class="select" id="fu-outcome" aria-label="联系结果"><option value="">本次仅更新进度</option><option>已接通</option><option>未接通</option><option>已通过微信沟通</option></select><textarea class="textarea" id="fu-note" placeholder="想说点什么就写两句，不写也可以"></textarea>
+            </div>
+            <div class="fu-group">
+              <div class="field-label">下次提醒</div>
+              <input type="date" class="input" id="fu-date" value="${addDays(defDays)}" />
+            </div>
+            <button class="btn btn-primary btn-block" style="padding:10px" onclick="submitFollowup('${l.id}')">保存</button>
+          </div>
+        </div>
+      `);
+    }
+    function setFuStatus(el, s) {
+      state.fuStatus = s;
+      Array.from(el.parentElement.children).forEach(c => c.classList.toggle('active', c === el));
+    }
+    function fuQuick(t) {
+      if (t === '已电话沟通' || t === '暂未接通') document.getElementById('fu-outcome').value = t === '已电话沟通' ? '已接通' : '未接通';
+      const ta = document.getElementById('fu-note');
+      const cur = ta.value.trim();
+      ta.value = cur ? cur.replace(/[；;]\s*$/, '') + '；' + t : t;
+    }
+    function submitFollowup(leadId) {
+      const note = (document.getElementById('fu-note').value || '').trim();
+      const dt = document.getElementById('fu-date').value;
+      const st = state.fuStatus || '跟进中';
+      const l = state.leads.find(x => x.id === leadId);
+      const outcome = document.getElementById('fu-outcome').value;
+      if (outcome) { l.contacted = true; l.overdue = false; }
+      l.status = st;
+      l.nextDate = st === '已结束' ? '' : dt;
+      l.logs.unshift({ t: '刚刚', text: [st,outcome,note].filter(Boolean).join(' · '), sys: false });
+      closeModal(); toast('已记下这次跟进', 'ok'); render();
+    }
+
+    /* ========================================================================
+       P5: Boss / Manager Dashboard
+       ======================================================================== */
+    function renderP5() {
+      if (state.anom.noPermP5 || state.role === 'sales') {
+        return `
+          <div class="pad" style="padding-top:64px">
+            <div class="card" style="text-align:center;padding:34px 18px">
+              <div style="font-size:38px;margin-bottom:10px">🔒</div>
+              <div style="font-weight:700;font-size:15px;margin-bottom:6px">仅店长可查看</div>
+              <div style="font-size:12px;color:var(--text-3);margin-bottom:18px">团队数据和线索分配需要店长权限。</div>
+              <button class="btn btn-primary btn-sm" onclick="state.anom.noPermP5=false;go('p1')">返回方案库</button>
+            </div>
+          </div>`;
+      }
+
+      const indLeads = state.leads.filter(l => l.ind === state.industry);
+      const unassigned = indLeads.filter(l => !l.ownerId && l.status !== '已结束');
+      const overdue = indLeads.filter(l => l.overdue && l.ownerId && l.status !== '已结束');
+      const awaiting = indLeads.filter(l=>l.ownerId && !l.contacted && l.status !== '已结束').length;
+      const total = unassigned.length + overdue.length;
+      const stage1 = state.industry === 'custom' ? '已约初尺' : '已约量房';
+      const stage2 = state.industry === 'custom' ? '已到店' : '已看方案';
+      const done1 = indLeads.filter(l => l.status === stage1).length;
+      const done2 = indLeads.filter(l => l.status === stage2).length;
+
+      const rows = [
+        ...unassigned.map(l => ({ l, kind: 'new' })),
+        ...overdue.map(l => ({ l, kind: 'late' }))
+      ];
+
+      const actionBlock = total === 0 ? `
+        <div class="action-block ok">
+          <div class="action-title">${awaiting ? `已全部分配，${awaiting} 条待首次联系` : '当前没有待分配或待首次联系的咨询'}</div>
+          <div style="font-size:11.5px;color:#2F7D46;margin-top:4px">以员工登记的联系结果为准。</div>
+        </div>` : `
+        <div class="action-block">
+          <div class="action-title">今天有 ${total} 条咨询待处理</div>
+          <div style="font-size:11px;color:#B25000;margin-top:3px">${unassigned.length} 条待分配 · ${awaiting} 条已分配待首次联系 · ${overdue.length} 条超时</div>
+          ${rows.map(({l, kind}) => `
+            <div class="todo-row">
+              <div style="flex:1;min-width:0">
+                <div class="todo-name">${l.name} · ${mask(l.phone)}</div>
+                <div class="todo-sub">${kind==='new' ? '未分配 · ' : '超 24 小时未跟进 · '}${htmlText(l.planTitle)}</div>
+              </div>
+              ${kind === 'new' ? `
+                <select class="assign-select" onchange="assignLead('${l.id}', this.value)">
+                  <option value="">指派 ▾</option>
+                  ${teamMembers().filter(m=>m.status==='active').map(m => `<option value="${m.id}">${m.name}</option>`).join('')}
+                </select>` : `
+                <button class="btn btn-sm" style="background:#fff;border:1px solid #FFD9D4;color:var(--red)" onclick="nudge('${l.id}')">提醒</button>`}
+            </div>
+          `).join('')}
+        </div>`;
+
+      return `
+        <div class="pad stack">
+          ${actionBlock}
+          <div class="card">
+            <div class="between" style="margin-bottom:2px">
+              <span style="font-weight:700;font-size:13.5px">本周团队</span>
+              <span style="font-size:10.5px;color:var(--text-3)">以员工登记的结果为准</span>
+            </div>
+            <div class="conv-row" style="margin-bottom:6px">
+              <div><b>${done1}</b><span>${stage1}</span></div>
+              <div><b>${done2}</b><span>${stage2}</span></div>
+              <div><b>${awaiting}</b><span>待首次联系</span></div>
+            </div>
+            ${teamMembers().map(m => `
+              <div class="member-row">
+                <div class="row" style="gap:5px;min-width:0">
+                  <span style="font-weight:600;font-size:12.5px">${m.name}</span>
+                  ${m.uv === 0
+                    ? '<span style="font-size:11px;color:var(--text-3)">· 未开始用</span>'
+                    : `<span style="font-size:11.5px;color:var(--text-2)">· ${m.uv} 人看过 · ${m.leads} 条咨询</span>`}
+                  ${m.status==='frozen' ? '<span class="badge b-gray">已冻结</span>' : ''}
+                </div>
+                <button class="more-btn" onclick="openMemberMenu('${m.id}')">⋯</button>
+              </div>
+            `).join('')}
+          </div>
+        </div>`;
+    }
+
+    function assignLead(leadId, empId) {
+      if (!empId) return;
+      const l = state.leads.find(x => x.id === leadId);
+      const emp = getEmp(empId);
+      l.ownerId = empId;
+      l.logs.unshift({ t: '刚刚', text: `张总指派给 ${emp.name}`, sys: true });
+      toast(`已指派给 ${emp.name}`, 'ok');
+      render();
+    }
+    function nudge(leadId) {
+      const l = state.leads.find(x => x.id === leadId);
+      const emp = getEmp(l.ownerId);
+      toast(`已提醒 ${emp ? emp.name : '负责人'} 尽快联系 ${l.name}`, 'ok');
+    }
+    function openMemberMenu(empId) {
+      const m = getEmp(empId);
+      const frozen = m.status === 'frozen';
+      openModal(`
+        <div class="sheet">
+          <div class="sheet-hd"><span>成员管理 · ${m.name}</span><button onclick="closeModal()">✕</button></div>
+          <div class="sheet-bd stack">
+            <button class="btn btn-ghost btn-block" style="padding:10px" onclick="closeModal();toggleFreeze('${empId}')">
+              ${frozen ? '解冻账号' : '冻结账号'}
+            </button>
+            <button class="btn btn-danger-out btn-block" style="padding:10px" onclick="openOffboard('${empId}')">
+              移除成员（离职交接）
+            </button>
+          </div>
+        </div>
+      `);
+    }
+    function toggleFreeze(empId) {
+      const m = getEmp(empId);
+      m.status = m.status === 'frozen' ? 'active' : 'frozen';
+      toast(m.status === 'frozen' ? `已冻结 ${m.name}：无法再分享，客户列表只读` : `已解冻 ${m.name}`, m.status==='frozen'?'err':'ok');
+      render();
+    }
+    function openOffboard(empId) {
+      const m = getEmp(empId);
+      const activeLeads = state.leads.filter(l => l.ind === state.industry && l.ownerId === empId && l.status !== '已结束');
+      if (activeLeads.length > 0) {
+        const others = teamMembers().filter(x => x.id !== empId && x.status === 'active');
+        openModal(`
+          <div class="modal-box">
+            <div class="sheet-hd"><span>离职前先交接客户</span><button onclick="closeModal()">✕</button></div>
+            <div class="sheet-bd stack">
+              <div style="font-size:12.5px;color:var(--text-2);line-height:1.6">
+                <strong>${m.name}</strong> 手上还有 <strong style="color:var(--red)">${activeLeads.length} 个在跟客户</strong>，交接完才能移除。
+              </div>
+              <select class="select" id="ob-target">
+                ${others.map(o => `<option value="${o.id}">全部交给：${o.name}</option>`).join('')}
+                <option value="pool">全部退回待分配</option>
+              </select>
+              <button class="btn btn-danger btn-block" onclick="confirmOffboard('${empId}')">确认交接并移除</button>
+            </div>
+          </div>
+        `, true);
+      } else {
+        state.members = state.members.filter(x => x.ind !== state.industry || x.id !== empId);
+        closeModal(); toast(`已移除 ${m.name}`, 'ok'); render();
+      }
+    }
+    function confirmOffboard(empId) {
+      const target = document.getElementById('ob-target').value;
+      const m = getEmp(empId);
+      const targetEmp = target === 'pool' ? null : getEmp(target);
+      state.leads.forEach(l => {
+        if (l.ind === state.industry && l.ownerId === empId && l.status !== '已结束') {
+          l.ownerId = targetEmp ? targetEmp.id : null;
+          l.logs.unshift({ t: '刚刚', text: `原负责人 ${m.name} 离职，已交接给 ${targetEmp ? targetEmp.name : '待分配'}`, sys: true });
+        }
+      });
+      state.members = state.members.filter(x => x.ind !== state.industry || x.id !== empId);
+      closeModal(); toast(`已交接并移除 ${m.name}`, 'ok'); render();
+    }
+
+    state.members = ['custom','deco'].flatMap(ind => state.members.map(member => ({ ...member, ind })));
+    state.leads.forEach(lead => { lead.contacted = lead.logs.some(log => !log.sys); });
+    // 最近一次人工跟进距今天数，用于撞单时判断归属是否保留
+    const IDLE_DAYS = { L102: 1, L105: 0, L106: 1, L201: 0, L203: 0 };
+    state.leads.forEach(lead => { lead.lastFollowDays = IDLE_DAYS[lead.id] ?? null; });
+
+    /* 启动参数：用于批量截图与深链。例：
+       ?shot=1&screen=p2&role=owner&anom=weakP2
+       ?shot=1&screen=p1&cold=1
+       ?shot=1&screen=p4&modal=followup
+       ?shot=1&screen=p1&modal=share&mode=poster            */
+    function boot() {
+      const q = new URLSearchParams(location.search);
+      if (q.get('shot') === '1') document.body.classList.add('shot-mode', 'flat');
+      if (q.get('ind')) {
+        state.industry = q.get('ind');
+        state.selectedPlanId = state.industry === 'custom' ? 'c1' : 'd1';
+      }
+      if (q.get('plan')) state.selectedPlanId = q.get('plan');
+      if (q.get('screen')) {
+        state.screen = q.get('screen');
+        if (['p2','p3'].includes(state.screen)) state.role = 'owner';
+        else if (state.screen === 'p5') state.role = 'boss';
+        else state.role = 'sales';
+      }
+      if (q.get('role')) state.role = q.get('role');
+      if (q.get('anom')) q.get('anom').split(',').forEach(k => { if (k in state.anom) state.anom[k] = true; });
+      if (q.get('cold') === '1') state.coldStart = true;
+      render();
+      const m = q.get('modal');
+      if (m === 'share') openShareModal(state.selectedPlanId, q.get('mode') || 'poster');
+      else if (m === 'followup') openFollowupModal('L101');
+      else if (m === 'member') openMemberMenu('emp2');
+      else if (m === 'offboard') openOffboard('emp2');
+      else if (m === 'sync') openSyncModal();
+      else if (m === 'manual') { state.p3Manual = true; render(); }
+    }
+
+    boot();
+  </script>
+</body>
+</html>
